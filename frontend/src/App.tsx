@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "./App.css";
 
 function App() {
   const [text, setText] = useState("");
@@ -7,22 +8,68 @@ function App() {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [result, setResult] = useState<any>(null);
 
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isRunning, setIsRunning] = useState(false);
+
   const backendURL = "http://127.0.0.1:8000";
 
   // Fetch text
-  useEffect(() => {
-    axios.get(`${backendURL}/get-text`)
-      .then(res => setText(res.data.text));
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (!startTime) {
-      setStartTime(Date.now());
-    }
-    setTypedText(e.target.value);
+  const fetchText = async () => {
+    const res = await axios.get(`${backendURL}/get-text`);
+    setText(res.data.text);
   };
 
-  const handleSubmit = async () => {
+  useEffect(() => {
+    fetchText();
+  }, []);
+
+  // TIMER
+  useEffect(() => {
+    let interval: any;
+
+    if (isRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    }
+
+    if (timeLeft === 0) {
+      setIsRunning(false);
+      submitTest();
+    }
+
+    return () => clearInterval(interval);
+  }, [isRunning, timeLeft]);
+
+  // ESC KEY RESTART
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        restartTest();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    if (!isRunning) {
+      setStartTime(Date.now());
+      setIsRunning(true);
+    }
+
+    setTypedText(value);
+
+    if (value.length === text.length) {
+      submitTest();
+    }
+  };
+
+  const submitTest = async () => {
     if (!startTime) return;
 
     const timeTaken = (Date.now() - startTime) / 1000;
@@ -34,34 +81,64 @@ function App() {
     });
 
     setResult(response.data);
+    setIsRunning(false);
+  };
+
+  const restartTest = () => {
+    setTypedText("");
+    setStartTime(null);
+    setResult(null);
+    setTimeLeft(60);
+    setIsRunning(false);
+    fetchText();
+  };
+
+  // Render colored characters
+  const renderText = () => {
+    return text.split("").map((char, index) => {
+      let color = "#6b7280";
+
+      if (index < typedText.length) {
+        color = char === typedText[index] ? "#a855f7" : "#ef4444";
+      }
+
+      return (
+        <span key={index} style={{ color }}>
+          {char}
+        </span>
+      );
+    });
   };
 
   return (
-    <div style={{ padding: "40px", fontFamily: "Arial" }}>
-      <h1>Typing Speed Test</h1>
+    <div className="container">
 
-      <p><strong>Type this:</strong></p>
-      <p style={{ background: "#eee", padding: "10px" }}>{text}</p>
+      <div className="top-bar">
+        <div className="timer">{timeLeft}s</div>
+        <div className="language">english</div>
+      </div>
 
-      <textarea
-        rows={5}
-        style={{ width: "100%", marginTop: "20px" }}
+      <div className="text-display">
+        {renderText()}
+      </div>
+
+      <input
+        type="text"
+        className="hidden-input"
+        autoFocus
         value={typedText}
         onChange={handleChange}
       />
 
-      <button onClick={handleSubmit} style={{ marginTop: "20px" }}>
-        Submit
-      </button>
-
       {result && (
-        <div style={{ marginTop: "20px" }}>
-          <h2>Results:</h2>
-          <p>Correct Words: {result.correct_words}</p>
+        <div className="results">
+          <h2>Results</h2>
           <p>WPM: {result.wpm}</p>
           <p>Accuracy: {result.accuracy}%</p>
+          <p className="restart-hint">Press ESC to restart</p>
         </div>
       )}
+
     </div>
   );
 }
