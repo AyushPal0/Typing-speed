@@ -1,43 +1,79 @@
 body {
   margin: 0;
-  background-color: #0b0b1f;
+  background: radial-gradient(circle at top, #1a0033, #0b001a 70%);
   font-family: 'Courier New', monospace;
   color: #6b7280;
-  overflow: hidden;
 }
 
+/* MAIN LAYOUT */
 .container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 80px;
+  padding-top: 80px;
+  padding-bottom: 80px;
+  align-items: center;
 }
 
+/* FIXED HEADER */
 .top-bar {
-  position: absolute;
-  top: 30px;
-  left: 60px;
-  right: 60px;
+  position: fixed;
+  top: 20px;
+  width: 90%;
+  max-width: 1200px;
   display: flex;
   justify-content: space-between;
   font-size: 20px;
+  z-index: 10;
 }
 
 .timer {
-  color: #a855f7;
+  color: #c084fc;
   font-weight: bold;
+  text-shadow: 0 0 8px #a855f7;
 }
 
-.language {
-  color: #6b7280;
+.live-wpm {
+  color: white;
 }
 
+/* TEXT AREA */
 .text-display {
-  font-size: 40px;
+  font-size: 42px;
   line-height: 70px;
   letter-spacing: 2px;
-  max-width: 1200px;
+  max-width: 1000px;
+  width: 90%;
+  margin-top: 60px;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+/* CHARACTER COLORS */
+.default {
+  color: #4b5563;
+  transition: color 0.2s ease;
+}
+
+.correct {
+  color: #c084fc;
+  transition: color 0.2s ease;
+}
+
+.incorrect {
+  color: #ef4444;
+  transition: color 0.2s ease;
+}
+
+.current {
+  border-left: 3px solid #c084fc;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% { border-color: #c084fc; }
+  50% { border-color: transparent; }
+  100% { border-color: #c084fc; }
 }
 
 .hidden-input {
@@ -46,14 +82,35 @@ body {
   pointer-events: none;
 }
 
+/* RESULTS SECTION */
 .results {
-  margin-top: 60px;
-  font-size: 22px;
+  margin-top: 80px;
+  width: 90%;
+  max-width: 1000px;
   color: white;
 }
 
+.results h2 {
+  margin-bottom: 20px;
+}
+
+/* GRAPH FIX */
+.graph {
+  margin-top: 40px;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* RESTART TEXT */
 .restart-hint {
-  margin-top: 20px;
+  margin-top: 30px;
   font-size: 16px;
-  color: #a855f7;
+  color: #c084fc;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
 }
