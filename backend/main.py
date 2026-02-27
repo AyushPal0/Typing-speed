@@ -3,7 +3,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import random
 
+# 🔹 Database imports
+from database import engine
+from models import Base
+
+# 🔹 Create database tables automatically
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
+
+from routers import auth
+from routers import typing
+
+app.include_router(auth.router)
+app.include_router(typing.router)
 
 # Allow frontend to connect
 app.add_middleware(
@@ -26,6 +39,11 @@ class TypingRequest(BaseModel):
     typed_text: str
     original_text: str
     time_taken: float  # in seconds
+
+
+@app.get("/")
+def root():
+    return {"message": "Typing Speed API Running with Database Connected"}
 
 
 @app.get("/get-text")
