@@ -18,7 +18,9 @@ function App() {
   const [text, setText] = useState("");
   const [typedText, setTypedText] = useState("");
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState(60);
+
+  const [selectedTime, setSelectedTime] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(30);
   const [isRunning, setIsRunning] = useState(false);
 
   const [liveWPM, setLiveWPM] = useState(0);
@@ -27,6 +29,7 @@ function App() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const backendURL = "http://127.0.0.1:8000";
 
@@ -40,7 +43,7 @@ function App() {
     fetchText();
   }, []);
 
-  // TIMER + LIVE WPM
+  // Timer logic
   useEffect(() => {
     let interval: any;
 
@@ -74,7 +77,6 @@ function App() {
         restartTest();
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
@@ -89,10 +91,19 @@ function App() {
 
     setTypedText(value);
 
-    // FIXED SOUND LOGIC
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().catch(() => { });
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      typingTimeoutRef.current = setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+      }, 150);
     }
 
     if (value.length >= text.length) {
@@ -124,7 +135,7 @@ function App() {
   const restartTest = () => {
     setTypedText("");
     setStartTime(null);
-    setTimeLeft(60);
+    setTimeLeft(selectedTime);
     setIsRunning(false);
     setLiveWPM(0);
     setWpmHistory([]);
@@ -137,6 +148,12 @@ function App() {
     }
 
     inputRef.current?.focus();
+  };
+
+  const changeTime = (time: number) => {
+    setSelectedTime(time);
+    setTimeLeft(time);
+    restartTest();
   };
 
   const renderText = () => {
@@ -161,25 +178,94 @@ function App() {
   };
 
   return (
-    <div className="container">
+    <div className="app">
 
       <Particles
         options={{
           particles: {
-            number: { value: 60 },
+            number: { value: 40 },
             size: { value: 2 },
-            move: { speed: 0.4 },
+            move: { speed: 0.3 },
             color: { value: "#a855f7" }
           }
         }}
       />
 
-      <div className="top-bar">
-        <div className="timer">{timeLeft}s</div>
-        <div className="live-wpm">Live WPM: {liveWPM}</div>
+      {/* HEADER */}
+      <div className="header">
+        <div className="navbar">
+          <div className="logo">⚡ TypeMaster</div>
+          <div className="nav-icons">
+            <span>⌨</span>
+            <span>🏆</span>
+            <span>⚙</span>
+          </div>
+        </div>
+
+        <div className="mode-bar">
+          <span className="active">time</span>
+          <span>words</span>
+          <span>quote</span>
+          <span>zen</span>
+        </div>
+
+        <div className="time-selector">
+          {[15, 30, 60, 120].map((t) => (
+            <span
+              key={t}
+              className={selectedTime === t ? "active-time" : ""}
+              onClick={() => changeTime(t)}
+            >
+              {t}
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div className="text-display">{renderText()}</div>
+      {/* MAIN CENTER */}
+      <div className="main">
+        <div className="language">english</div>
+
+        <div className="stats">
+          <span>{timeLeft}s</span>
+          <span>WPM: {liveWPM}</span>
+        </div>
+
+        <div className="text-area">
+          {renderText()}
+        </div>
+
+        {finalStats && (
+          <motion.div
+            className="results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <h2>Final Results</h2>
+            <p>Final WPM: {finalStats.wpm}</p>
+            <p>Accuracy: {finalStats.accuracy}%</p>
+            <p>Correct Words: {finalStats.correct_words}</p>
+
+            <div className="graph">
+              <Line
+                data={{
+                  labels: wpmHistory.map((_, i) => i),
+                  datasets: [
+                    {
+                      label: "WPM Over Time",
+                      data: wpmHistory,
+                      borderColor: "#a855f7",
+                      tension: 0.3
+                    }
+                  ]
+                }}
+              />
+            </div>
+
+            <p>Press ESC to restart</p>
+          </motion.div>
+        )}
+      </div>
 
       <input
         ref={inputRef}
@@ -192,40 +278,13 @@ function App() {
 
       <audio ref={audioRef} src="/type.mp3" preload="auto" />
 
-      {finalStats && (
-        <motion.div
-          className="results"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <h2>Final Results</h2>
-          <p>Final WPM: {finalStats.wpm}</p>
-          <p>Accuracy: {finalStats.accuracy}%</p>
-          <p>Correct Words: {finalStats.correct_words}</p>
-          <p>Total Characters Typed: {typedText.length}</p>
-
-          <div className="graph">
-            <Line
-              data={{
-                labels: wpmHistory.map((_, i) => i),
-                datasets: [
-                  {
-                    label: "WPM Over Time",
-                    data: wpmHistory,
-                    borderColor: "#a855f7",
-                    tension: 0.3
-                  }
-                ]
-              }}
-            />
-          </div>
-
-          <p className="restart-hint">Press ESC to restart</p>
-        </motion.div>
-      )}
+      {/* FOOTER */}
+      <div className="footer">
+        <span>esc — restart</span>
+        <span>ctrl + shift + p — command line</span>
+      </div>
 
     </div>
   );
 }
-
 export default App;
