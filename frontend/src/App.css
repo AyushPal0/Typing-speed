@@ -90,7 +90,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;   /* vertical center */
+  justify-content: center;
+  /* vertical center */
   align-items: center;
   padding: 0 20px;
 }
@@ -140,7 +141,9 @@ body {
 }
 
 @keyframes blink {
-  50% { border-color: transparent; }
+  50% {
+    border-color: transparent;
+  }
 }
 
 /* RESULTS */
@@ -173,4 +176,64 @@ body {
   position: absolute;
   opacity: 0;
   pointer-events: none;
+}
+
+/* ================= LOGIN PAGE ================= */
+
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at top, #1a0033, #0b001a 70%);
+}
+
+.login-card {
+  background: rgba(20, 0, 40, 0.6);
+  padding: 40px;
+  border-radius: 16px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+}
+
+.login-title {
+  text-align: center;
+  color: #c084fc;
+}
+
+.login-input {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: #1f0033;
+  color: white;
+}
+
+.login-input:focus {
+  box-shadow: 0 0 10px #a855f7;
+}
+
+.login-button {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #a855f7;
+  color: white;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.login-button:hover {
+  background: #9333ea;
+}
+
+.login-error {
+  color: #ef4444;
+  text-align: center;
 }
