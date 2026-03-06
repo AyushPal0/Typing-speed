@@ -237,3 +237,56 @@ body {
   color: #ef4444;
   text-align: center;
 }
+
+/* Subtitle under the logo on auth pages */
+.login-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+  margin-top: -10px;
+}
+
+/* Success message on register */
+.login-success {
+  color: #4ade80;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* "Already have an account?" text below the button */
+.login-footer-text {
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Clickable link in auth pages */
+.login-link {
+  color: #c084fc;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+
+.login-link:hover {
+  color: #a855f7;
+}
+
+/* Logout button in the navbar */
+.logout-btn {
+  background: transparent;
+  border: 1px solid #a855f7;
+  color: #c084fc;
+  padding: 5px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  margin-left: 20px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.logout-btn:hover {
+  background: #a855f7;
+  color: white;
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { loginUser, saveToken, getToken } from "../services/api";
 import "../App.css";
 
 function Login() {
@@ -11,37 +11,29 @@ function Login() {
 
     const navigate = useNavigate();
 
-    const backendURL = "http://127.0.0.1:8000";
-
-    // 🔐 If already logged in, redirect to home
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            navigate("/");
-        }
+        if (getToken()) navigate("/");
     }, [navigate]);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") login();
+    };
 
     const login = async () => {
         if (!username || !password) {
             setError("Please enter username and password.");
             return;
         }
-
         try {
             setLoading(true);
             setError("");
-
-            const res = await axios.post(`${backendURL}/login`, {
-                username,
-                password
-            });
-
-            const token = res.data.access_token;
-
-            localStorage.setItem("token", token);
-
-            navigate("/"); // Go to typing test
-
+            const data = await loginUser(username, password);
+            if (data?.access_token) {
+                saveToken(data.access_token);
+                navigate("/");
+            } else {
+                setError("Invalid credentials.");
+            }
         } catch (err: any) {
             setError("Invalid username or password.");
         } finally {
@@ -51,9 +43,9 @@ function Login() {
 
     return (
         <div className="login-container">
-
-            <div className="login-card">
-                <h2 className="login-title">⚡ TypeMaster Login</h2>
+            <div className="login-card" onKeyDown={handleKeyDown}>
+                <h2 className="login-title">⚡ TypeMaster</h2>
+                <p className="login-subtitle">Login to track your progress</p>
 
                 {error && <p className="login-error">{error}</p>}
 
@@ -63,8 +55,8 @@ function Login() {
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    autoFocus
                 />
-
                 <input
                     className="login-input"
                     type="password"
@@ -78,10 +70,14 @@ function Login() {
                     onClick={login}
                     disabled={loading}
                 >
-                    {loading ? "Logging in..." : "Login"}
+                    {loading ? "Logging in…" : "Login"}
                 </button>
-            </div>
 
+                <p className="login-footer-text">
+                    Don't have an account?{" "}
+                    <Link to="/register" className="login-link">Register</Link>
+                </p>
+            </div>
         </div>
     );
 }

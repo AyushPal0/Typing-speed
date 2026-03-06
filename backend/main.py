@@ -12,13 +12,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-from routers import auth
-from routers import typing
-
-app.include_router(auth.router)
-app.include_router(typing.router)
-
-# Allow frontend to connect
+# Allow frontend to connect (must be before routers)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Later restrict to frontend URL
@@ -26,6 +20,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from routers import auth
+from routers import typing
+
+app.include_router(auth.router)
+app.include_router(typing.router)
 
 # Sample texts
 TEXTS = [
